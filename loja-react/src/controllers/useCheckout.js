@@ -5,6 +5,7 @@
 
 import { useState, useMemo } from 'react';
 import { criarPedido } from '../models/PedidoService.js';
+import { validarCupom, totalizarPedido } from '../models/cupons.js';
 
 // Opções de frete (simuladas). Frete grátis quando o subtotal atinge o limite.
 export function opcoesFrete(subtotal) {
@@ -28,11 +29,33 @@ export function useCheckout(carrinho) {
   const [enviando, setEnviando] = useState(false);
   const [pedido, setPedido] = useState(null);
 
+  // Cupom: o que o cliente digitou e o resultado da validação já aplicada.
+  const [codigoCupom, setCodigoCupom] = useState('');
+  const [cupom, setCupom] = useState(null);
+
   const fretes = useMemo(() => opcoesFrete(carrinho.total), [carrinho.total]);
-  const totalFinal = useMemo(
-    () => carrinho.total + (frete ? frete.valor : 0),
-    [carrinho.total, frete],
+
+  // Uma única fonte de verdade para a conta do pedido (cupom -> Pix -> frete).
+  const conta = useMemo(
+    () => totalizarPedido({
+      subtotal: carrinho.total,
+      cupom,
+      formaPagamento: pagamento,
+      frete: frete ? frete.valor : 0,
+    }),
+    [carrinho.total, cupom, pagamento, frete],
   );
+
+  function aplicarCupom() {
+    const resultado = validarCupom(codigoCupom, carrinho.total);
+    setCupom(resultado);
+    return resultado;
+  }
+
+  function removerCupom() {
+    setCupom(null);
+    setCodigoCupom('');
+  }
 
   const enderecoValido =
     endereco.nome && endereco.cep && endereco.rua && endereco.numero && endereco.cidade && endereco.uf;
@@ -47,12 +70,15 @@ export function useCheckout(carrinho) {
     const resultado = await criarPedido({
       endereco, frete, pagamento,
       itens: carrinho.itens,
-      subtotal: carrinho.total,
-      total: totalFinal,
+      cupom: cupom && cupom.ok ? cupom.codigo : null,
+      subtotal: conta.subtotal,
+      descontoCupom: conta.descontoCupom,
+      descontoPix: conta.descontoPix,
+      total: conta.total,
     });
     setEnviando(false);
     if (resultado.ok) {
-      setPedido(resultado);
+      setPedido({ ...resultado, economia: conta.economia });
       carrinho.limpar();
     }
   }
@@ -62,6 +88,8 @@ export function useCheckout(carrinho) {
     endereco, setEndereco, enderecoValido, avancarEndereco,
     fretes, frete, escolherFrete,
     pagamento, setPagamento,
-    totalFinal, enviando, pedido, finalizar,
+    codigoCupom, setCodigoCupom, cupom, aplicarCupom, removerCupom,
+    conta, totalFinal: conta.total,
+    enviando, pedido, finalizar,
   };
 }

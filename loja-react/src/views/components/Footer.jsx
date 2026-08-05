@@ -19,11 +19,12 @@ export default function Footer() {
           </div>
           <div className="foot-col">
             <h4>Comprar</h4>
-            <a href="#ofertas">Ofertas do dia</a>
-            <Link to="/">Eletrodomésticos</Link>
-            <Link to="/">Celulares</Link>
-            <a href="#casa">Casa Inteligente</a>
-            <Link to="/">Utilidades</Link>
+            <Link to="/#ofertas">Ofertas do dia</Link>
+            <Link to="/busca?cat=Eletrodom%C3%A9sticos">Eletrodomésticos</Link>
+            <Link to="/busca?cat=Celulares">Celulares</Link>
+            <Link to="/busca?cat=Casa%20Inteligente">Casa Inteligente</Link>
+            <Link to="/busca?cat=Utilidades">Utilidades</Link>
+            <Link to="/favoritos">Meus favoritos</Link>
           </div>
           <div className="foot-col">
             <h4>Ajuda</h4>

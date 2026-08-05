@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import { formatarBRL, estrelas, vendidosTexto } from '../../util/formato.js';
 import { descontoPct, parcelamento, precoPix } from '../../models/calculos.js';
 import { useCarrinho } from '../../controllers/CarrinhoContext.jsx';
+import { useFavoritos } from '../../controllers/FavoritosContext.jsx';
 import ProdutoIcone from './ProdutoIcone.jsx';
 
 export default function ProdutoCard({ produto }) {
   const { adicionar } = useCarrinho();
+  const { alternar, ehFavorito } = useFavoritos();
+  const favorito = ehFavorito(produto);
   const desconto = descontoPct(produto.precoOriginal, produto.preco);
   const parc = parcelamento(produto.preco);
   const url = `/produto/${encodeURIComponent(produto.id != null ? produto.id : produto.nome)}`;
@@ -16,8 +19,15 @@ export default function ProdutoCard({ produto }) {
     <article className="card">
       <div className="thumb">
         {desconto > 0 && <span className="off">-{desconto}%</span>}
-        <button className="wish" type="button" aria-label="Favoritar">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.8 5.6a5 5 0 00-7 0l-.8.8-.8-.8a5 5 0 00-7 7l7.8 7.9a1 1 0 001.4 0l7.8-7.9a5 5 0 000-7z" /></svg>
+        <button
+          className={`wish${favorito ? ' on' : ''}`}
+          type="button"
+          aria-pressed={favorito}
+          aria-label={favorito ? `Remover ${produto.nome} dos favoritos` : `Favoritar ${produto.nome}`}
+          title={favorito ? 'Remover dos favoritos' : 'Salvar nos favoritos'}
+          onClick={() => alternar(produto)}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill={favorito ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.8 5.6a5 5 0 00-7 0l-.8.8-.8-.8a5 5 0 00-7 7l7.8 7.9a1 1 0 001.4 0l7.8-7.9a5 5 0 000-7z" /></svg>
         </button>
         <Link className="thumb-link" to={url} aria-label={produto.nome}>
           {produto.imagem

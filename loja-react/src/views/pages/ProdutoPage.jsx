@@ -65,7 +65,9 @@ export default function ProdutoPage() {
       <main className="wrap pdp-wrap">
         <nav className="breadcrumb" aria-label="Você está em">
           <Link to="/">Início</Link><span>/</span>
-          <Link to="/">{produto.categoria || 'Produtos'}</Link><span>/</span>
+          <Link to={produto.categoria ? `/busca?cat=${encodeURIComponent(produto.categoria)}` : '/busca?cat=todas'}>
+            {produto.categoria || 'Produtos'}
+          </Link><span>/</span>
           <span className="atual">{produto.nome}</span>
         </nav>
 
@@ -154,7 +156,9 @@ export default function ProdutoPage() {
               </div>
               <div className="sec-tail">
                 {usandoDemo && <span className="demo-note show">demonstração · API offline</span>}
-                <Link className="sec-link" to="/">Ver mais <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></Link>
+                <Link className="sec-link" to={produto.categoria ? `/busca?cat=${encodeURIComponent(produto.categoria)}` : '/busca?cat=todas'}>
+                  Ver mais <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </Link>
               </div>
             </div>
             <div className="grid">

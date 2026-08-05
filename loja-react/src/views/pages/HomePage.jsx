@@ -3,9 +3,12 @@ import { Link } from 'react-router-dom';
 import { useProdutos } from '../../controllers/useProdutos.js';
 import VitrineGrade from '../components/VitrineGrade.jsx';
 import Contador from '../components/Contador.jsx';
+import AvisoApi from '../components/AvisoApi.jsx';
+import Newsletter from '../components/Newsletter.jsx';
+import CupomCopiavel from '../components/CupomCopiavel.jsx';
 
 export default function HomePage() {
-  const { carregando, ofertas, maisVendidos, usandoDemo } = useProdutos();
+  const { carregando, ofertas, maisVendidos, usandoDemo, erro, recarregar } = useProdutos();
 
   return (
     <>
@@ -54,7 +57,7 @@ export default function HomePage() {
               ['s-blender', 'Cozinha'], ['s-house', 'Casa Inteligente'], ['s-headphones', 'Áudio'],
               ['s-fan', 'Climatização'], ['s-tools', 'Utilidades'],
             ].map(([icone, nome]) => (
-              <Link className="cat-tile" to="/" key={nome}>
+              <Link className="cat-tile" to={`/busca?cat=${encodeURIComponent(nome)}`} key={nome}>
                 <span className="ci"><svg width="26" height="26" viewBox="0 0 64 64"><use href={`#${icone}`} /></svg></span>
                 <span>{nome}</span>
               </Link>
@@ -80,10 +83,10 @@ export default function HomePage() {
               <p className="sub">Preços que caem quando o estoque acaba. Corre que voa.</p>
             </div>
             <div className="sec-tail">
-              {usandoDemo && <span className="demo-note show">demonstração · API offline</span>}
               <Contador />
             </div>
           </div>
+          <AvisoApi usandoDemo={usandoDemo} erro={erro} aoTentarDeNovo={recarregar} carregando={carregando} />
           <VitrineGrade carregando={carregando} itens={ofertas} skeletons={8} />
         </div>
       </section>
@@ -110,8 +113,7 @@ export default function HomePage() {
               <h2>Mais vendidos da semana</h2>
             </div>
             <div className="sec-tail">
-              {usandoDemo && <span className="demo-note show">demonstração · API offline</span>}
-              <a className="sec-link" href="#ofertas">Ver tudo <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
+              <Link className="sec-link" to="/busca?ordem=relevancia&cat=todas">Ver tudo <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></Link>
             </div>
           </div>
           <VitrineGrade carregando={carregando} itens={maisVendidos} skeletons={4} />
@@ -126,18 +128,10 @@ export default function HomePage() {
             <div>
               <h3>Primeira compra? Ganha R$ 50</h3>
               <p>Use o cupom abaixo em pedidos acima de R$ 399. Válido em toda a loja.</p>
-              <span className="code"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M4 7v10M20 7v10M8 5h8l4 4v6l-4 4H8l-4-4V9z" /></svg>ACHEI50</span>
+              <CupomCopiavel codigo="ACHEI50" />
             </div>
           </div>
-          <div className="panel news">
-            <h3>Receba as ofertas antes de todo mundo</h3>
-            <p>Cadastre seu e-mail e não perca os preços da Semana do Eletro.</p>
-            <form onSubmit={(e) => e.preventDefault()}>
-              <input type="email" placeholder="seu@email.com" aria-label="Seu e-mail" />
-              <button className="btn btn-deal" type="submit">Quero ofertas</button>
-            </form>
-            <p className="fine">Sem spam. Você cancela quando quiser.</p>
-          </div>
+          <Newsletter />
         </div>
       </section>
     </>

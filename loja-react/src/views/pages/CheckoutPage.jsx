@@ -20,6 +20,9 @@ export default function CheckoutPage() {
           </div>
           <h1>Pedido confirmado!</h1>
           <p>Seu pedido <strong>{ck.pedido.numero}</strong> foi recebido. Enviaremos os detalhes por e-mail.</p>
+          {ck.pedido.economia > 0 && (
+            <p className="pedido-economia">Você economizou <strong>{formatarBRL(ck.pedido.economia)}</strong> nesta compra.</p>
+          )}
           {ck.pedido.simulado && (
             <p className="pedido-sim">Modo demonstração: o back-end ainda não tem a rota <code>/pedidos</code>, então o pedido foi simulado (nada foi cobrado).</p>
           )}
@@ -115,6 +118,34 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
+              {/* CUPOM */}
+              <div className="ck-cupom">
+                <h3>Cupom de desconto</h3>
+                {ck.cupom && ck.cupom.ok ? (
+                  <div className="cupom-ok">
+                    <span>
+                      <b>{ck.cupom.codigo}</b> aplicado — {formatarBRL(ck.conta.descontoCupom)} de desconto
+                    </span>
+                    <button type="button" className="cupom-remover" onClick={ck.removerCupom}>Remover</button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="cupom-form">
+                      <input
+                        value={ck.codigoCupom}
+                        onChange={(e) => ck.setCodigoCupom(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); ck.aplicarCupom(); } }}
+                        placeholder="Digite seu cupom"
+                        aria-label="Código do cupom"
+                        autoComplete="off"
+                      />
+                      <button type="button" className="btn btn-ghost" onClick={ck.aplicarCupom}>Aplicar</button>
+                    </div>
+                    {ck.cupom && !ck.cupom.ok && <p className="cupom-erro" role="alert">{ck.cupom.erro}</p>}
+                  </>
+                )}
+              </div>
+
               <div className="ck-entrega">
                 <h3>Entrega</h3>
                 <p>{ck.endereco.nome} · {ck.endereco.rua}, {ck.endereco.numero} — {ck.endereco.cidade}/{ck.endereco.uf}</p>
@@ -144,8 +175,23 @@ export default function CheckoutPage() {
             ))}
           </ul>
           <div className="resumo-linha"><span>Subtotal</span><span className="tnum">{formatarBRL(carrinho.total)}</span></div>
+          {ck.conta.descontoCupom > 0 && (
+            <div className="resumo-linha desconto">
+              <span>Cupom {ck.cupom.codigo}</span>
+              <span className="tnum">− {formatarBRL(ck.conta.descontoCupom)}</span>
+            </div>
+          )}
+          {ck.conta.descontoPix > 0 && (
+            <div className="resumo-linha desconto">
+              <span>Desconto Pix (10%)</span>
+              <span className="tnum">− {formatarBRL(ck.conta.descontoPix)}</span>
+            </div>
+          )}
           <div className="resumo-linha"><span>Frete</span><span className="tnum">{ck.frete ? (ck.frete.valor === 0 ? 'Grátis' : formatarBRL(ck.frete.valor)) : '—'}</span></div>
           <div className="resumo-total"><span>Total</span><strong className="tnum">{formatarBRL(ck.totalFinal)}</strong></div>
+          {ck.conta.economia > 0 && (
+            <p className="resumo-economia">Você está economizando {formatarBRL(ck.conta.economia)}</p>
+          )}
         </aside>
       </div>
     </main>

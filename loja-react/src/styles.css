@@ -244,10 +244,6 @@ footer { margin-top: var(--step); background: var(--surface); border-top: 1px so
 .socials a { width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); transition: color .16s ease, border-color .16s ease, transform .16s ease; }
 .socials a:hover { color: var(--primary); border-color: var(--primary); transform: translateY(-2px); }
 
-/* ============ REVEAL ============ */
-.reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1); }
-.reveal.in { opacity: 1; transform: none; }
-
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1000px) {
   .cats-grid { grid-template-columns: repeat(4, 1fr); }
@@ -283,7 +279,7 @@ footer { margin-top: var(--step); background: var(--surface); border-top: 1px so
   .grid { grid-template-columns: 1fr; }
   .cats-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } .reveal { opacity: 1; transform: none; transition: none; } .skel-card .sk { animation: none; } .cart-overlay, .cart-drawer { transition: none; } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } .skel-card .sk { animation: none; } .cart-overlay, .cart-drawer { transition: none; } }
 
 /* ============ HEADER: botão do carrinho ============ */
 button.icon-btn { background: none; border: 0; font: inherit; cursor: pointer; }
@@ -443,4 +439,121 @@ button.icon-btn { background: none; border: 0; font: inherit; cursor: pointer; }
   .form-grid { grid-template-columns: 1fr; }
   .ck-acoes { flex-direction: column-reverse; }
   .ck-acoes .btn { width: 100%; }
+}
+
+/* ============ AVISO DE API / MODO DEMONSTRAÇÃO ============ */
+.aviso-api { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 18px; padding: 12px 16px; border: 1px solid color-mix(in srgb, var(--deal) 35%, var(--line)); background: var(--deal-soft); border-radius: 12px; font-size: .88rem; color: var(--ink); }
+.aviso-api-selo { font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #fff; background: var(--deal); padding: 4px 9px; border-radius: 999px; flex: none; }
+.aviso-api-texto { flex: 1; min-width: 12ch; color: var(--muted); }
+.aviso-api-btn { flex: none; font: inherit; font-size: .84rem; font-weight: 700; color: var(--deal); background: var(--surface); border: 1.5px solid var(--deal); border-radius: 9px; padding: 7px 14px; cursor: pointer; transition: background .16s ease, color .16s ease; }
+.aviso-api-btn:hover:not(:disabled) { background: var(--deal); color: #fff; }
+.aviso-api-btn:disabled { opacity: .55; cursor: progress; }
+
+/* ============ PÁGINA 404 ============ */
+.nf-wrap { padding-block: clamp(3rem, 8vw, 6rem) var(--step); }
+.nf { max-width: 620px; margin: 0 auto; text-align: center; }
+.nf-code { font-size: clamp(4.5rem, 16vw, 8rem); font-weight: 850; line-height: 1; letter-spacing: -.04em; color: var(--primary-soft); }
+@media (prefers-color-scheme: dark) { .nf-code { color: var(--surface-2); } }
+.nf h1 { font-size: clamp(1.5rem, 4vw, 2.1rem); font-weight: 800; margin-top: -.35em; }
+.nf > p { color: var(--muted); margin-top: 12px; font-size: .98rem; line-height: 1.6; }
+.nf-path { background: var(--surface-2); border: 1px solid var(--line); border-radius: 7px; padding: 2px 7px; font-size: .88em; word-break: break-all; }
+.nf-acoes { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 26px; }
+.nf-atalhos { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; font-size: .88rem; }
+.nf-atalhos span { color: var(--muted); }
+.nf-atalhos a { color: var(--primary); font-weight: 650; border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; transition: border-color .16s ease, background .16s ease; }
+.nf-atalhos a:hover { border-color: var(--primary); background: var(--primary-soft); }
+
+/* ============ BUSCA / CATÁLOGO ============ */
+.busca-wrap { padding-top: 28px; padding-bottom: var(--step); }
+.busca-top { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: space-between; margin-bottom: 20px; }
+.busca-titulo { font-size: clamp(1.5rem, 3.4vw, 2.1rem); font-weight: 800; line-height: 1.15; }
+.busca-contagem { color: var(--muted); font-size: .92rem; margin-top: 6px; }
+.ordenar { display: flex; align-items: center; gap: 9px; font-size: .86rem; color: var(--muted); flex: none; }
+.ordenar select { font: inherit; font-size: .88rem; font-weight: 600; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; cursor: pointer; }
+.ordenar select:focus { outline: none; border-color: var(--primary); }
+
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.chip { font: inherit; font-size: .85rem; font-weight: 650; color: var(--muted); background: var(--surface); border: 1.5px solid var(--line); border-radius: 999px; padding: 8px 16px; cursor: pointer; transition: color .16s ease, border-color .16s ease, background .16s ease; }
+.chip:hover { color: var(--primary); border-color: var(--primary); }
+.chip.ativo { color: var(--on-primary); background: var(--primary); border-color: var(--primary); }
+
+.filtros-ativos { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 20px; font-size: .85rem; }
+.tag-filtro { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px 5px 12px; }
+.tag-filtro b { color: var(--ink); font-weight: 700; }
+.tag-filtro button { font: inherit; font-size: 1.15rem; line-height: 1; color: var(--muted); background: none; border: 0; cursor: pointer; padding: 0 4px; border-radius: 5px; }
+.tag-filtro button:hover { color: var(--deal); }
+.limpar-tudo { font: inherit; font-size: .85rem; font-weight: 700; color: var(--primary); background: none; border: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+.busca-vazia { display: grid; place-items: center; }
+.carregar-mais { display: flex; justify-content: center; margin-top: 30px; }
+
+/* ============ FAVORITOS (coração do card) ============ */
+.wish.on { color: var(--deal); border-color: color-mix(in srgb, var(--deal) 45%, var(--line)); background: var(--deal-soft); }
+.wish.on:hover { transform: scale(1.12); }
+
+/* ============ CUPOM COPIÁVEL (home) ============ */
+.code-btn { font: inherit; cursor: pointer; background: var(--deal-soft); transition: transform .14s ease, border-color .16s ease; }
+.code-btn:hover { transform: translateY(-1px); }
+.code-btn.copiado { border-style: solid; border-color: var(--ship); color: var(--ship); background: var(--ship-soft); }
+.code-dica { font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .7; border-left: 1px solid currentColor; padding-left: 8px; margin-left: 2px; }
+
+/* ============ NEWSLETTER (retorno ao cliente) ============ */
+.news-msg { margin-top: 10px; font-size: .82rem; font-weight: 600; }
+.news-msg.ok { color: var(--ship); }
+.news-msg.erro { color: var(--deal); }
+
+/* ============ CHECKOUT: CUPOM E DESCONTOS ============ */
+.ck-cupom { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); }
+.ck-cupom h3 { font-size: 1rem; font-weight: 720; margin-bottom: 12px; }
+.cupom-form { display: flex; gap: 10px; flex-wrap: wrap; }
+.cupom-form input { flex: 1; min-width: 160px; border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 10px; padding: 11px 13px; font: inherit; font-size: .95rem; color: var(--ink); text-transform: uppercase; letter-spacing: .06em; }
+.cupom-form input:focus { outline: none; border-color: var(--primary); }
+.cupom-form input::placeholder { text-transform: none; letter-spacing: normal; color: var(--muted); }
+.cupom-form .btn { flex: none; }
+.cupom-erro { margin-top: 10px; font-size: .84rem; color: var(--deal); }
+.cupom-ok { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; background: var(--ship-soft); border: 1.5px solid color-mix(in srgb, var(--ship) 40%, var(--line)); border-radius: 10px; padding: 12px 14px; font-size: .89rem; color: var(--ink); }
+.cupom-ok b { color: var(--ship); letter-spacing: .06em; }
+.cupom-remover { font: inherit; font-size: .82rem; font-weight: 700; color: var(--muted); background: none; border: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.cupom-remover:hover { color: var(--deal); }
+
+.resumo-linha.desconto { color: var(--ship); font-weight: 650; }
+.resumo-economia { margin-top: 10px; font-size: .82rem; font-weight: 700; color: var(--ship); text-align: right; }
+.pedido-economia { margin-top: 10px; color: var(--ship); font-weight: 650; }
+
+@media (max-width: 560px) {
+  .busca-top { align-items: flex-start; }
+  .ordenar { width: 100%; justify-content: space-between; }
+  .ordenar select { flex: 1; }
+  .cupom-form .btn { width: 100%; }
+  .busca-titulo { overflow-wrap: anywhere; } /* busca longa não estoura a linha */
+}
+
+/* ============ MOBILE: CAMPOS E ALVOS DE TOQUE ============ */
+/* O Safari do iPhone dá zoom automático em qualquer campo com fonte < 16px.
+   Fixar 16px no mobile evita a página "pular" ao tocar num input. */
+@media (max-width: 860px) {
+  .search input,
+  .campo input,
+  .news input,
+  .cupom-form input,
+  .ordenar select { font-size: 16px; }
+}
+
+/* Alvos pequenos demais para o dedo (mínimo confortável ~32px). */
+.tag-filtro button { min-width: 26px; min-height: 26px; display: grid; place-items: center; }
+@media (pointer: coarse) {
+  .wish { width: 38px; height: 38px; }
+  .chip { padding: 10px 17px; }
+}
+
+/* ============ HEADER EM TELAS BEM ESTREITAS ============ */
+/* Com três botões (conta, favoritos, carrinho) o cabeçalho aperta abaixo de
+   ~400px; encolhemos marca e botões em vez de deixar transbordar. */
+@media (max-width: 400px) {
+  .head-main { gap: 10px; }
+  .brand { font-size: 1.1rem; gap: 7px; }
+  .brand .mark { width: 28px; height: 28px; }
+  .head-actions { gap: 0; }
+  .icon-btn { padding: 8px; }
+  .cart-badge { left: 20px; }
 }
