@@ -31,6 +31,11 @@ yarn-error.*
 *.pem
 
 # local env files
+# ATENÇÃO: `.env` precisa estar aqui — ele guarda a senha do banco.
+# O padrão do Expo (`.env*.local`) sozinho NÃO cobre um `.env` simples.
+.env
+.env.*
+!.env.example
 .env*.local
 
 # typescript

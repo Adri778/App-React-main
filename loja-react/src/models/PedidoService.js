@@ -19,7 +19,7 @@ export async function criarPedido(pedido) {
     });
     if (resp.ok) {
       const dado = await resp.json().catch(() => ({}));
-      return { ok: true, numero: dado.id ?? dado.numero ?? gerarNumero(), simulado: false };
+      return { ok: true, numero: dado.numero ?? dado.id ?? gerarNumero(), simulado: false };
     }
     throw new Error('HTTP ' + resp.status);
   } catch (erro) {

@@ -1,25 +1,21 @@
 -- =============================================================================
--- bom_preco · schema de referência da tabela `produtos`
+-- bom_preco — schema do banco
 -- =============================================================================
--- Esta tabela atende DOIS consumidores ao mesmo tempo:
+-- Este script é SEGURO de rodar mais de uma vez: ele só cria o que ainda não
+-- existe e nunca apaga nada. Se precisar recomeçar do zero, use o bloco de
+-- RESET que está comentado no final do arquivo.
 --
---   1) App de estoque (React Native)  -> usa nome, preco, quantidade, estoque_minimo
---   2) Loja / storefront (web)        -> usa nome, preco, preco_original, categoria,
---                                        imagem, is_promo, frete_gratis, avaliacao,
---                                        vendidos, descricao
+-- Consumidores deste banco:
+--   1) Loja (loja-react)      -> vitrine, busca, checkout
+--   2) App de estoque (RN)    -> quantidade, estoque_minimo
 --
 -- CONVENÇÃO: todas as colunas em português.
---   Motivo: as queries de backend/models/Produto.js já assumem português
---   (`ORDER BY nome`, `quantidade <= estoque_minimo`), e o normalizador da loja
---   (loja-react/src/models/calculos.js) aceita os dois idiomas — então o
---   português é o único conjunto que funciona nos dois lados sem remendo.
+--   As queries de backend/models/Produto.js já assumem português
+--   (`ORDER BY nome`, `quantidade <= estoque_minimo`), e o normalizador da
+--   loja (loja-react/src/models/calculos.js) aceita os dois idiomas — então
+--   o português é o único conjunto que serve aos dois lados sem remendo.
 --
--- ATENÇÃO: backend/controllers/ProdutoController.js (lerEntrada) hoje monta o
---   INSERT com chaves em INGLÊS (name, price, category, image, originalPrice,
---   isPromo). Contra este schema, o POST /api/produtos falha com
---   "Unknown column 'name' in 'field list'". Corrigir lerEntrada para português.
---
--- Uso:  mysql -u root -p < schema.sql
+-- Uso no Workbench: abra este arquivo e execute com o raio ⚡ (Ctrl+Shift+Enter)
 -- =============================================================================
 
 CREATE DATABASE IF NOT EXISTS bom_preco
@@ -28,28 +24,27 @@ CREATE DATABASE IF NOT EXISTS bom_preco
 
 USE bom_preco;
 
-DROP TABLE IF EXISTS produtos;
-
-CREATE TABLE produtos (
+-- -----------------------------------------------------------------------------
+-- PRODUTOS — serve à vitrine da loja e ao controle de estoque do app
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS produtos (
   id              INT AUTO_INCREMENT PRIMARY KEY,
 
-  -- --- Identidade do produto (usado pelos dois consumidores) ---------------
+  -- Identidade (usada pelos dois consumidores)
   nome            VARCHAR(180)   NOT NULL,
   categoria       VARCHAR(80)    NOT NULL DEFAULT '',
   descricao       TEXT           NULL,
   imagem          VARCHAR(500)   NOT NULL DEFAULT '',
   preco           DECIMAL(10,2)  NOT NULL,
 
-  -- --- Vitrine da loja ------------------------------------------------------
-  -- preco_original alimenta o cálculo de "-X%" (calculos.js -> descontoPct).
-  preco_original  DECIMAL(10,2)  NULL,
+  -- Vitrine da loja
+  preco_original  DECIMAL(10,2)  NULL,      -- alimenta o cálculo do "-X%"
   is_promo        TINYINT(1)     NOT NULL DEFAULT 0,
   frete_gratis    TINYINT(1)     NOT NULL DEFAULT 0,
   avaliacao       DECIMAL(2,1)   NULL,      -- 0.0 a 5.0 — vira as estrelas do card
   vendidos        INT            NOT NULL DEFAULT 0,
-  link            VARCHAR(500)   NOT NULL DEFAULT '',  -- link de afiliado (hoje sem uso na View)
 
-  -- --- Controle de estoque (app React Native) ------------------------------
+  -- Controle de estoque (app React Native)
   quantidade      INT            NOT NULL DEFAULT 0,
   estoque_minimo  INT            NOT NULL DEFAULT 0,
 
@@ -60,13 +55,70 @@ CREATE TABLE produtos (
   INDEX idx_vendidos  (vendidos)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =============================================================================
--- SEED — os 12 produtos de loja-react/src/models/dadosDemo.js
--- Com isso a loja mostra exatamente o mesmo catálogo do modo demonstração,
--- porém vindo do banco de verdade (o selo "demonstração · API offline" some).
--- =============================================================================
+-- -----------------------------------------------------------------------------
+-- PEDIDOS — cabeçalho do pedido fechado no checkout da loja
+-- -----------------------------------------------------------------------------
+-- O número que o cliente vê (ACH-000123) NÃO é uma coluna: ele é derivado do
+-- id pelo back-end. Guardar seria duplicar informação que já existe.
+CREATE TABLE IF NOT EXISTS pedidos (
+  id                INT AUTO_INCREMENT PRIMARY KEY,
 
-INSERT INTO produtos
+  -- Entrega
+  cliente_nome      VARCHAR(180)   NOT NULL,
+  cep               VARCHAR(9)     NOT NULL,
+  rua               VARCHAR(200)   NOT NULL,
+  endereco_numero   VARCHAR(20)    NOT NULL,
+  bairro            VARCHAR(120)   NOT NULL DEFAULT '',
+  cidade            VARCHAR(120)   NOT NULL,
+  uf                CHAR(2)        NOT NULL,
+
+  -- Frete escolhido (congelado: a tabela de fretes pode mudar depois)
+  frete_nome        VARCHAR(80)    NOT NULL,
+  frete_prazo       VARCHAR(60)    NOT NULL DEFAULT '',
+  frete_valor       DECIMAL(10,2)  NOT NULL DEFAULT 0,
+
+  -- Dinheiro (cada desconto separado, para auditoria)
+  forma_pagamento   ENUM('pix','cartao','boleto') NOT NULL,
+  cupom             VARCHAR(40)    NULL,
+  subtotal          DECIMAL(10,2)  NOT NULL,
+  desconto_cupom    DECIMAL(10,2)  NOT NULL DEFAULT 0,
+  desconto_pix      DECIMAL(10,2)  NOT NULL DEFAULT 0,
+  total             DECIMAL(10,2)  NOT NULL,
+
+  status            ENUM('recebido','pago','enviado','entregue','cancelado')
+                    NOT NULL DEFAULT 'recebido',
+  criado_em         TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  INDEX idx_status (status),
+  INDEX idx_criado (criado_em)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------------------------------
+-- ITENS_PEDIDO — as linhas de cada pedido
+-- -----------------------------------------------------------------------------
+-- `nome` e `preco_unitario` são CONGELADOS na hora da compra, de propósito:
+-- se o produto mudar de preço ou for renomeado amanhã, o pedido de ontem tem
+-- que continuar mostrando o que o cliente realmente pagou.
+CREATE TABLE IF NOT EXISTS itens_pedido (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  pedido_id       INT            NOT NULL,
+  produto_id      INT            NULL,      -- NULL se o produto for excluído depois
+  nome            VARCHAR(180)   NOT NULL,
+  preco_unitario  DECIMAL(10,2)  NOT NULL,
+  quantidade      INT            NOT NULL,
+
+  CONSTRAINT fk_item_pedido  FOREIGN KEY (pedido_id)  REFERENCES pedidos(id)  ON DELETE CASCADE,
+  CONSTRAINT fk_item_produto FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE SET NULL,
+  INDEX idx_pedido (pedido_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================================================
+-- SEED — os 12 produtos que a loja usa hoje no modo demonstração
+-- =============================================================================
+-- INSERT IGNORE: se o id já existir, a linha é pulada em vez de dar erro.
+-- Assim dá para rodar o arquivo inteiro de novo sem duplicar nem quebrar.
+
+INSERT IGNORE INTO produtos
   (id, nome, categoria, preco, preco_original, is_promo, frete_gratis, avaliacao, vendidos, quantidade, estoque_minimo, descricao)
 VALUES
   (1,  'Smart TV 50" 4K UHD com Wi-Fi',              'TV & Vídeo',       1999.00, 2799.00, 1, 1, 4.5, 1200, 25, 5,
@@ -94,6 +146,27 @@ VALUES
   (12, 'Frigobar 80L Baixo Consumo',                 'Eletrodomésticos',  779.00, 1199.00, 1, 1, 4.6,  640,  9, 4,
    'Frigobar de 80 litros com baixo consumo, prateleiras removíveis e porta reversível. Ideal para quartos e escritórios.');
 
--- Conferência rápida:
---   SELECT id, nome, preco, preco_original, quantidade FROM produtos ORDER BY nome;
---   SELECT * FROM produtos WHERE quantidade <= estoque_minimo;  -- rota /estoque-baixo
+-- =============================================================================
+-- CONFERÊNCIA — rode depois e compare com o esperado
+-- =============================================================================
+-- IMPORTANTE: se a tabela `produtos` JÁ EXISTIA com outro formato (por exemplo
+-- com colunas em inglês), o CREATE TABLE IF NOT EXISTS acima foi ignorado em
+-- silêncio. A query abaixo mostra as colunas reais — confira antes de seguir.
+
+SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT
+  FROM INFORMATION_SCHEMA.COLUMNS
+ WHERE TABLE_SCHEMA = 'bom_preco' AND TABLE_NAME = 'produtos'
+ ORDER BY ORDINAL_POSITION;
+
+SELECT COUNT(*) AS total_produtos FROM produtos;
+SELECT id, nome, preco, quantidade FROM produtos ORDER BY nome LIMIT 5;
+SELECT * FROM produtos WHERE quantidade <= estoque_minimo;  -- rota /estoque-baixo
+
+-- =============================================================================
+-- RESET (destrutivo) — descomente APENAS se quiser recomeçar do zero
+-- =============================================================================
+-- Apaga TODOS os dados. A ordem importa por causa das chaves estrangeiras.
+--
+-- DROP TABLE IF EXISTS itens_pedido;
+-- DROP TABLE IF EXISTS pedidos;
+-- DROP TABLE IF EXISTS produtos;

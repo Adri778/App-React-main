@@ -1,16 +1,23 @@
 const Produto = require('../models/Produto');
 
 // Aceita só os campos conhecidos do produto, ignorando qualquer extra
-// que o cliente envie (evita mass assignment).
+// que o cliente envie (evita mass assignment). As chaves de saída são as
+// colunas reais da tabela (português); a entrada aceita os dois idiomas
+// porque o app de estoque manda em português e o site mandava em inglês.
 function lerEntrada(corpo) {
   return {
-    name: corpo.name,
-    price: corpo.price,
-    category: corpo.category,
-    description: corpo.description,
-    image: corpo.image,
-    originalPrice: corpo.originalPrice,
-    isPromo: corpo.isPromo,
+    nome: corpo.nome ?? corpo.name,
+    preco: corpo.preco ?? corpo.price,
+    categoria: corpo.categoria ?? corpo.category ?? '',
+    descricao: corpo.descricao ?? corpo.description ?? '',
+    imagem: corpo.imagem ?? corpo.image ?? '',
+    preco_original: corpo.preco_original ?? corpo.originalPrice ?? null,
+    is_promo: Number(corpo.is_promo ?? corpo.isPromo ?? 0),
+    frete_gratis: Number(corpo.frete_gratis ?? corpo.freeShipping ?? 0),
+    avaliacao: corpo.avaliacao ?? corpo.rating ?? null,
+    vendidos: Number(corpo.vendidos ?? corpo.sold ?? 0),
+    quantidade: Number(corpo.quantidade ?? 0),
+    estoque_minimo: Number(corpo.estoque_minimo ?? corpo.estoqueMinimo ?? 0),
   };
 }
 
@@ -32,6 +39,9 @@ const ProdutoController = {
 
   criar: (req, res) => {
     const dados = lerEntrada(req.body);
+    if (!dados.nome || dados.preco == null) {
+      return res.status(400).json({ erro: 'nome e preco são obrigatórios' });
+    }
     Produto.criar(dados, (erro, resultado) => {
       if (erro) return res.status(500).json({ erro: 'Erro ao criar produto' });
       res.status(201).json({ id: resultado.insertId, ...dados });
